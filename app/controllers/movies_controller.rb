@@ -6,20 +6,55 @@ class MoviesController < ApplicationController
     # will render app/views/movies/show.<extension> by default
   end
 
-  def index
-    @movies = Movie.all
-    sort = params[:sort]
-    #@class_con = ""
-    if (sort!=nil)
-      @movies = Movie.order(sort)
-      if (sort == "title")
-        @class_t = "hilite"
-        @class_rd = ""
-      else
-        @class_rd = "hilite"
-        @class_t = ""
-      end      
+  def check(rating)
+    if params[:ratings] != nil
+      params[:ratings].keys.include?(rating)
+    else
+      @all_ratings = Movie.getRatings
+      h = Hash.new(0)
+      @all_ratings.each {|r| h[r]=1}
+      params[:ratings] = h
     end
+  end
+
+  helper_method :check
+
+  def setBG(column)
+    sort = params[:sort]
+    if (sort != nil)
+      if (sort == column)
+        "hilite"
+      else
+        ""
+      end
+    end
+ end
+
+  helper_method :setBG
+
+  def index
+    @all_ratings = Movie.getRatings#['G','PG','PG-13','R']#Movie.ratings()
+
+    if params == nil
+      h = Hash
+      @all_ratings.each {|r| h[r]=1}
+      params[:ratings] = h
+    end
+
+    sort = params[:sort]
+    if (sort != nil)
+      @movies = Movie.order(sort)
+    else
+      sort = ""
+    end
+
+    if (params[:ratings] != nil)
+      @check = true
+      @movies = Movie.find :all, :conditions => { :rating => params[:ratings].keys}, :order => sort
+    else
+      @check = false
+      @movies = Movie.find :all, :order => sort
+    end  
   end
 
   def new
