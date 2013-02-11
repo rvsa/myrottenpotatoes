@@ -28,19 +28,18 @@ class MoviesController < ApplicationController
         ""
       end
     end
- end
+  end
 
   helper_method :setBG
 
   def index
-    @all_ratings = Movie.getRatings#['G','PG','PG-13','R']#Movie.ratings()
-
-    if params == nil
-      h = Hash
-      @all_ratings.each {|r| h[r]=1}
-      params[:ratings] = h
-    end
-
+    @all_ratings = Movie.getRatings
+    
+   
+    if (request.fullpath == "/movies" && session[:params] != nil)      
+      redirect_to(session[:params])
+    end    
+    session[:params] = params
     sort = params[:sort]
     if (sort != nil)
       @movies = Movie.order(sort)
